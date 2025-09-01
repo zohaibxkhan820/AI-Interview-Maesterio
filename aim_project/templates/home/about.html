@@ -1,0 +1,25 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+<section class="about-section">
+    <div class="container">
+        <h1 class="page-title text-center">ABOUT US</h1>
+
+        <div class="about-content">
+            <p class="about-text">
+                Welcome to AI Interview Maestro (AIM) – your intelligent partner in mastering job interviews. AIM is designed to provide AI-driven mock interviews that offer real-time feedback, helping candidates refine their communication skills, body language, and
+                responses. Unlike traditional interview preparations, AIM utilizes advanced Natural Language Processing (NLP), Machine Learning, and Computer Vision to create a realistic and personalized interview experience.
+            </p>
+            <p class="about-text">
+                Our goal is to bridge the gap between theory and practice by empowering individuals with AI-powered insights and expert feedback. Whether you are a student, job seeker, or professional looking to enhance your interview skills, AIM is here to help you
+                build confidence and succeed in your career journey.
+            </p>
+            <p class="about-text">
+                Join us and experience the future of interview preparation today!
+            </p>
+        </div>
+
+        <div class="about-image-container">
+            <img src="{% static 'images/interview.png' %}" alt="AI Interview" class="about-image">
+        </div>
+    </div>
+</section>
+{% endblock %}

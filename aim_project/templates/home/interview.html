@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Session</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/interview.css">
+
+    <!-- CSRF Token for Django -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+
+<body data-interview-id="{{ interview.id }}">
+    <div class="interview-container">
+        <!-- Header with Logo and Timer -->
+        <header class="interview-header">
+            <div class="logo-container">
+                <img src="/static/images/logo.png" alt="AI Interview Mastero" class="logo">
+                <h1>AI Interview Session</h1>
+            </div>
+            <div class="timer-container">
+                <div class="timer" id="interview-timer">
+                    <i class="fas fa-clock"></i>
+                    <span id="timer-display">20:00</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="interview-content">
+            <div class="row g-4">
+                <!-- Video Feed Column -->
+                <div class="col-lg-7">
+                    <div class="video-container">
+                        <div class="video-overlay" id="video-overlay">
+                            <div class="overlay-content">
+                                <i class="fas fa-video"></i>
+                                <p>Camera access required</p>
+                                <p class="small">Click "Start Interview" to begin</p>
+                            </div>
+                        </div>
+                        <video id="user-video" autoplay playsinline muted></video>
+                        <div class="video-controls">
+                            <button class="control-btn" id="mic-toggle" title="Toggle Microphone">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button class="control-btn" id="camera-toggle" title="Toggle Camera">
+                                <i class="fas fa-video"></i>
+                            </button>
+                        </div>
+                        <!-- Toggle Switches for Analysis -->
+                        <div class="analysis-toggles d-flex justify-content-center mt-3">
+                            <div class="form-check form-switch mx-3">
+                                <input class="form-check-input" type="checkbox" id="toggle-emotion" checked>
+                                <label class="form-check-label" for="toggle-emotion">
+                                    <i class="fas fa-smile"></i> Emotion Analysis
+                                </label>
+                            </div>
+                            <div class="form-check form-switch mx-3">
+                                <input class="form-check-input" type="checkbox" id="toggle-posture" checked>
+                                <label class="form-check-label" for="toggle-posture">
+                                    <i class="fas fa-user"></i> Posture Analysis
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interview Controls -->
+                    <div class="interview-controls">
+                        <button class="btn btn-primary btn-lg" id="start-interview">
+                            <i class="fas fa-play"></i> Start Interview
+                        </button>
+                        <button class="btn btn-warning btn-lg" id="pause-interview" disabled>
+                            <i class="fas fa-pause"></i> Pause Interview
+                        </button>
+                        <button class="btn btn-danger btn-lg" id="end-interview" disabled>
+                            <i class="fas fa-stop"></i> End Interview
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chat Column -->
+                <div class="col-lg-5">
+                    <div class="chat-container">
+                        <div class="chat-header">
+                            <h2><i class="fas fa-comments"></i> Interview Conversation</h2>
+                        </div>
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="system-message">
+                                <div class="message-content">
+                                    <p>Welcome to your AI Interview session. Click "Start Interview" when you're ready to begin.</p>
+                                </div>
+                                <div class="message-time">Now</div>
+                            </div>
+                        </div>
+                        <div class="chat-input">
+                            <div class="input-group">
+                                <input type="text" id="user-message" class="form-control" placeholder="Type your response..." disabled>
+                                <button class="btn btn-primary" id="send-message" disabled>
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <i class="fas fa-circle status-indicator" id="connection-status"></i>
+                <span id="status-text">Ready</span>
+            </div>
+            <div class="status-item">
+                <span id="question-counter">Question: 0/10</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interview Complete Modal -->
+    <div class="modal fade" id="interview-complete-modal" tabindex="-1" aria-labelledby="interviewCompleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="interviewCompleteModalLabel">Interview Complete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Your interview session has been completed successfully.</p>
+                    <p>Our AI is now analyzing your responses. Your results will be available shortly.</p>
+                </div>
+                <div class="modal-footer">
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">Return to Dashboard</a>
+                    <a href="{% url 'reports' %}" class="btn btn-primary">View Reports</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script src="/static/js/csrf.js"></script>
+    <script src="/static/js/interview.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,111 @@
+{% load static %} {% load django_bootstrap5 %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Mastero - Dashboard</title>
+
+    <!-- Bootstrap CSS -->
+    {% bootstrap_css %}
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}"> {% block extra_head %}{% endblock %}
+</head>
+
+<body class="dashboard-body">
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="dashboard-sidebar">
+            <div class="sidebar-logo">
+                <a href="{% url 'dashboard' %}">
+                    <img src="{% static 'images/logo.png' %}" alt="AIM Logo" class="logo">
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="sidebar-item {% if current_page == 'dashboard' %}active{% endif %}">
+                        <a href="{% url 'dashboard' %}" class="sidebar-link">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% if current_page == 'reports' %}active{% endif %}">
+                        <a href="{% url 'reports' %}" class="sidebar-link">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {% if current_page == 'settings' %}active{% endif %}">
+                        <a href="{% url 'settings' %}" class="sidebar-link">
+                            <i class="fas fa-cog"></i>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="dashboard-content">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-right">
+                    <div class="notification-bell">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="user-profile">
+                        <span class="user-name">{{ request.user.first_name|default:request.user.username }}</span>
+                        <div class="user-avatar">
+                            {% if request.user.profile.avatar %}
+                            <img src="{{ request.user.profile.avatar.url }}" alt="User Avatar"> {% else %}
+                            <img src="{% static 'images/default-avatar.png' %}" alt="Default Avatar"> {% endif %}
+                        </div>
+                        <div class="user-dropdown">
+                            <a href="{% url 'settings' %}">Profile</a>
+                            <a href="{% url 'logout' %}">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="dashboard-main">
+                {% if messages %}
+                <div class="dashboard-messages">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %} {% block dashboard_content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    {% bootstrap_javascript %}
+
+    <!-- Custom JS -->
+    <script src="{% static 'js/csrf.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/dashboard.js' %}"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

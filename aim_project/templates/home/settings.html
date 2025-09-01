@@ -1,0 +1,105 @@
+{% extends 'base_dashboard.html' %} {% load static %} {% block dashboard_content %}
+<div class="dashboard-main-content">
+    <h1 class="dashboard-title">Settings</h1>
+
+    <div class="settings-container">
+        <!-- Profile Picture Section -->
+        <div class="settings-section">
+            <div class="settings-section-header">
+                <h2 class="settings-section-title">Change Profile Picture</h2>
+            </div>
+            <div class="settings-section-content">
+                <div class="profile-picture-container">
+                    <div class="profile-picture-wrapper">
+                        {% if request.user.profile.avatar %}
+                        <img src="{{ request.user.profile.avatar.url }}" alt="Profile Picture" id="profile-picture-preview"> {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="Default Profile Picture" id="profile-picture-preview"> {% endif %}
+                    </div>
+                    <div class="profile-picture-actions">
+                        <form method="post" action="{% url 'update_profile_picture' %}" enctype="multipart/form-data" id="profile-picture-form">
+                            {% csrf_token %} {{ profile_picture_form.avatar }}
+                            <button type="button" class="btn btn-choose-picture" id="choose-picture-btn">Choose Picture</button>
+                            <button type="submit" class="btn btn-update">Update</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Username Change Section -->
+        <div class="settings-section">
+            <div class="settings-section-header">
+                <h2 class="settings-section-title">Change username</h2>
+            </div>
+            <div class="settings-section-content">
+                <form method="post" action="{% url 'update_username' %}" class="settings-form">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="{{ username_form.old_username.id_for_label }}">Old username</label> {{ username_form.old_username }}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="{{ username_form.new_username.id_for_label }}">New Username</label> {{ username_form.new_username }}
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-update">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Password Change Section -->
+        <div class="settings-section">
+            <div class="settings-section-header">
+                <h2 class="settings-section-title">Change password</h2>
+            </div>
+            <div class="settings-section-content">
+                <form method="post" action="{% url 'update_password' %}" class="settings-form">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="{{ password_form.old_password.id_for_label }}">Old Password</label> {{ password_form.old_password }}
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="{{ password_form.new_password1.id_for_label }}">New Password</label> {{ password_form.new_password1 }}
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-update">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Profile picture preview
+        const profilePictureInput = document.getElementById('profile-picture-input');
+        const profilePicturePreview = document.getElementById('profile-picture-preview');
+        const choosePictureBtn = document.getElementById('choose-picture-btn');
+
+        if (choosePictureBtn && profilePictureInput) {
+            choosePictureBtn.addEventListener('click', function() {
+                profilePictureInput.click();
+            });
+        }
+
+        if (profilePictureInput && profilePicturePreview) {
+            profilePictureInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        profilePicturePreview.src = e.target.result;
+                    }
+
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,230 @@
+{% extends 'base_dashboard.html' %} {% load static %} {% block extra_head %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %} {% block dashboard_content %}
+<div class="dashboard-main-content">
+    <h1 class="dashboard-title">Reports</h1>
+
+    {% if has_interview_data and latest_result %}
+    <div class="reports-charts">
+        <div class="chart-row">
+            <div class="chart-container line-chart-container">
+                <h2 class="chart-title">Previous Record</h2>
+                <canvas id="progressChart"></canvas>
+            </div>
+
+            <div class="chart-container pie-chart-container">
+                <canvas id="scoreDistributionChart"></canvas>
+            </div>
+        </div>
+        
+    </div>
+
+    <div class="reports-table-container">
+        <table class="reports-table">
+            <thead>
+                <tr>
+                    <th>S.no</th>
+                    <th>Name of Interview</th>
+                    <th>Date</th>
+                    <th>Percentile (Tech/Non-Tech)</th>
+                    <th>Download Report</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for interview in completed_interviews %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ interview.title }}</td>
+                    <td>{{ interview.scheduled_date|date:"d-M-Y" }}</td>
+                    <td>
+                        {% if interview.result %} {{ interview.result.technical_score }}% / {{ interview.result.non_technical_score }}% {% else %} N/A {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'download_report' interview.id %}" class="btn btn-download">Download</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="no-reports">
+        <div class="no-data-message">
+            <i class="fas fa-chart-line"></i>
+            <h3>No Reports Available</h3>
+            <p>You haven't completed any interviews yet. Complete an interview to see your performance reports.</p>
+            <a href="{% url 'dashboard' %}" class="btn btn-primary">Schedule an Interview</a> {% if completed_interviews %}
+            <div class="mock-data-section">
+                <p>For testing purposes, you can generate mock results for your scheduled interviews:</p>
+                <div class="mock-interviews-list">
+                    {% for interview in completed_interviews %} {% if not interview.result %}
+                    <div class="mock-interview-item">
+                        <span>{{ interview.title }} ({{ interview.scheduled_date|date:"d-M-Y" }})</span>
+                        <a href="{% url 'mock_interview_result' interview.id %}" class="btn btn-sm btn-secondary">Generate Results</a>
+                    </div>
+                    {% endif %} {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} {% block extra_js %} {% if has_interview_data and latest_result %}
+<script>
+    // Prevent multiple initializations
+    let chartsInitialized = false;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        if (chartsInitialized) return;
+        chartsInitialized = true;
+        
+        // Fetch report data for the latest result
+        fetch('{% url "get_report_data" latest_result.id %}')
+            .then(response => response.json())
+            .then(data => {
+                // Initialize charts with the data
+                initProgressChart(data.daily_progress);
+                initScoreDistributionChart(data.technical_score, data.non_technical_score);
+            })
+            .catch(error => {
+                console.error('Error fetching report data:', error);
+            });
+
+        function initProgressChart(dailyProgressData) {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            const existingChart = Chart.getChart(ctx);
+            if (existingChart) {
+                existingChart.destroy();
+            }
+
+            // Convert the data object to arrays for Chart.js
+            const labels = Object.keys(dailyProgressData);
+            const scores = Object.values(dailyProgressData);
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Performance Score',
+                        data: scores,
+                        borderColor: '#4299e1',
+                        backgroundColor: 'rgba(66, 153, 225, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointBackgroundColor: '#4299e1',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#000000',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#000000',
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function initScoreDistributionChart(technicalScore, nonTechnicalScore) {
+            const ctx = document.getElementById('scoreDistributionChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            const existingChart = Chart.getChart(ctx);
+            if (existingChart) {
+                existingChart.destroy();
+            }
+
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Technical', 'Non-Technical'],
+                    datasets: [{
+                        data: [technicalScore, nonTechnicalScore],
+                        backgroundColor: ['#4299e1', '#ed8936'],
+                        borderColor: ['#2b6cb0', '#c05621'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#000000',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        },
+                        datalabels: {
+                            color: '#fff',
+                            font: {
+                                weight: 'bold',
+                                size: 16
+                            },
+                            formatter: (value) => {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endif %} {% endblock %}

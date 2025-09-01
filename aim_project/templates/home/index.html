@@ -1,0 +1,14 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+<section class="hero">
+    <div class="container text-center">
+        <h1 class="main-heading">WELCOME TO AI INTERVIEW MASTERO</h1>
+        <p class="sub-heading">Your one-go place for Interview Preparations</p>
+
+        <a href="{% url 'login' %}" class="btn btn-get-started ">Get Started</a>
+
+        <div class="hero-image-container ">
+            <img src="{% static 'images/interview.png' %} " alt="AI Interview " class="hero-image ">
+        </div>
+    </div>
+</section>
+{% endblock %}
